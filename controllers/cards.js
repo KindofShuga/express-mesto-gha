@@ -1,22 +1,30 @@
 const Card = require('../models/card');
-const ValidationError = require('../utils/ValidationError');
 const ResourceNotFound = require('../utils/ResourceNotFound');
+const {
+  STATUS_OK,
+  STATUS_CREATED,
+  STATUS_BAD_REQUEST,
+  STATUS_INTERNAL_SERVER_ERROR,
+} = require('../utils/statuses');
 
 const getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.status(200).send(cards))
-    .catch((e) => res.status(500).send({ message: `Error finding cards ${e}` }));
+    .then((cards) => res.status(STATUS_OK).send(cards))
+    .catch((e) => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error finding cards ${e}` }));
 };
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .orFail(() => {
-      throw new ValidationError();
-    })
-    .then((user) => res.status(201).send(user))
-    .catch((e) => res.status(500).send({ message: `Error creating card ${e}` }));
+    .then((user) => res.status(STATUS_CREATED).send(user))
+    .catch((e) => {
+      if (e.name === 'ValidationError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+      } else {
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error creating card ${e}` });
+      }
+    });
 };
 
 const deleteCard = (req, res) => {
@@ -24,14 +32,8 @@ const deleteCard = (req, res) => {
     .orFail(() => {
       throw new ResourceNotFound();
     })
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((e) => {
-      if (e.name === 'ValidationError') {
-        res.status(e.status).send(e);
-      } else {
-        res.status(500).send({ message: `Error deleting card ${e}` });
-      }
-    });
+    .then((card) => res.status(STATUS_OK).send({ data: card }))
+    .catch((e) => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error deleting card ${e}` }));
 };
 
 const likeCard = (req, res) => {
@@ -39,14 +41,12 @@ const likeCard = (req, res) => {
     .orFail(() => {
       throw new ResourceNotFound();
     })
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
-        res.status(e.status).send(e);
-      } else if (e.name === 'ValidationError') {
-        res.status(e.status).send(e);
+      if (e.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(500).send({ message: `Error like card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error like card ${e}` });
       }
     });
 };
@@ -56,14 +56,12 @@ const dislikeCard = (req, res) => {
     .orFail(() => {
       throw new ResourceNotFound();
     })
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
-        res.status(e.status).send(e);
-      } else if (e.name === 'ValidationError') {
-        res.status(e.status).send(e);
+      if (e.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(500).send({ message: `Error dislike card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error dislike card ${e}` });
       }
     });
 };

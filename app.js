@@ -6,6 +6,7 @@ const app = express();
 const { PORT = 3000 } = process.env;
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+mongoose.set('strictQuery', false);
 
 app.use(express.json());
 app.use((req, res, next) => {
