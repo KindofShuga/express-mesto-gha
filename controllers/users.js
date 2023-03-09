@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const ValidationError = require('../utils/ValidationError');
 const ResourceNotFound = require('../utils/ResourceNotFound');
 
 const getUsers = (req, res) => {
@@ -16,6 +17,8 @@ const getUser = (req, res) => {
     .catch((e) => {
       if (e.name === 'ResourceNotFound') {
         res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
+        res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error finding user ${e}` });
       }
@@ -24,19 +27,30 @@ const getUser = (req, res) => {
 
 const createUser = (req, res) => {
   User.create(req.body)
+    .orFail(() => {
+      throw new ValidationError();
+    })
     .then((user) => res.status(201).send(user))
-    .catch((e) => res.status(500).send({ message: `Error creating user ${e}` }));
+    .catch((e) => {
+      if (e.name === 'ValidationError') {
+        res.status(e.status).send(e);
+      } else {
+        res.status(500).send({ message: `Error creating user ${e}` });
+      }
+    });
 };
 
 const updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new ResourceNotFound();
+      throw new ValidationError();
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((e) => {
       if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
         res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error update user ${e}` });
@@ -48,11 +62,11 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new ResourceNotFound();
+      throw new ValidationError();
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
+      if (e.name === 'ValidationError') {
         res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error update avatar ${e}` });

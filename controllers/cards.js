@@ -1,4 +1,5 @@
 const Card = require('../models/card');
+const ValidationError = require('../utils/ValidationError');
 const ResourceNotFound = require('../utils/ResourceNotFound');
 
 const getCards = (req, res) => {
@@ -11,6 +12,9 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
+    .orFail(() => {
+      throw new ValidationError();
+    })
     .then((user) => res.status(201).send(user))
     .catch((e) => res.status(500).send({ message: `Error creating card ${e}` }));
 };
@@ -22,7 +26,7 @@ const deleteCard = (req, res) => {
     })
     .then((card) => res.status(200).send({ data: card }))
     .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
+      if (e.name === 'ValidationError') {
         res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error deleting card ${e}` });
@@ -39,6 +43,8 @@ const likeCard = (req, res) => {
     .catch((e) => {
       if (e.name === 'ResourceNotFound') {
         res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
+        res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error like card ${e}` });
       }
@@ -53,6 +59,8 @@ const dislikeCard = (req, res) => {
     .then((card) => res.status(200).send({ data: card }))
     .catch((e) => {
       if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
         res.status(e.status).send(e);
       } else {
         res.status(500).send({ message: `Error dislike card ${e}` });
