@@ -33,7 +33,15 @@ const deleteCard = (req, res) => {
       throw new ResourceNotFound();
     })
     .then((card) => res.status(STATUS_OK).send({ data: card }))
-    .catch((e) => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error deleting card ${e}` }));
+    .catch((e) => {
+      if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+      } else {
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error deleting card ${e}` });
+      }
+    });
 };
 
 const likeCard = (req, res) => {
@@ -43,7 +51,9 @@ const likeCard = (req, res) => {
     })
     .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((e) => {
-      if (e.name === 'CastError') {
+      if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
         res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error like card ${e}` });
@@ -58,7 +68,9 @@ const dislikeCard = (req, res) => {
     })
     .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((e) => {
-      if (e.name === 'CastError') {
+      if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
         res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error dislike card ${e}` });
