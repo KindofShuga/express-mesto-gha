@@ -10,7 +10,7 @@ const {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(STATUS_OK).send(users))
-    .catch((e) => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error finding users ${e}` }));
+    .catch(() => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error finding users' }));
 };
 
 const getUser = (req, res) => {
@@ -25,7 +25,7 @@ const getUser = (req, res) => {
       } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error finding user ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error finding user' });
       }
     });
 };
@@ -37,7 +37,7 @@ const createUser = (req, res) => {
       if (e.name === 'ValidationError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error creating user ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error creating user' });
       }
     });
 };
@@ -50,10 +50,12 @@ const updateUser = (req, res) => {
     })
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((e) => {
-      if (e.name === 'ValidationError') {
+      if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error update user ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error update user' });
       }
     });
 };
@@ -66,10 +68,12 @@ const updateAvatar = (req, res) => {
     })
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((e) => {
-      if (e.name === 'ValidationError') {
+      if (e.name === 'ResourceNotFound') {
+        res.status(e.status).send(e);
+      } else if (e.name === 'ValidationError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error update avatar ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error update avatar' });
       }
     });
 };

@@ -10,7 +10,7 @@ const {
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(STATUS_OK).send(cards))
-    .catch((e) => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error finding cards ${e}` }));
+    .catch(() => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error finding cards' }));
 };
 
 const createCard = (req, res) => {
@@ -22,7 +22,7 @@ const createCard = (req, res) => {
       if (e.name === 'ValidationError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error creating card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error creating card' });
       }
     });
 };
@@ -39,7 +39,7 @@ const deleteCard = (req, res) => {
       } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error deleting card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error deleting card' });
       }
     });
 };
@@ -56,7 +56,7 @@ const likeCard = (req, res) => {
       } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error like card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error like card' });
       }
     });
 };
@@ -73,7 +73,7 @@ const dislikeCard = (req, res) => {
       } else if (e.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send({ message: e.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: `Error dislike card ${e}` });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error dislike card' });
       }
     });
 };
