@@ -1,8 +1,9 @@
 const AplicationError = require('./AplicationError');
+const { STATUS_NOT_FOUND } = require('./statuses');
 
 class ResourceNotFound extends AplicationError {
   constructor() {
-    super(404, 'Resource Not Found');
+    super(STATUS_NOT_FOUND, 'Resource Not Found');
   }
 }
 

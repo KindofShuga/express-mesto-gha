@@ -1,79 +1,81 @@
 const Card = require('../models/card');
-const ResourceNotFound = require('../utils/ResourceNotFound');
+const ResourceNotFound = require('../errors/ResourceNotFound');
+const Forbidden = require('../errors/Forbidden');
 const {
   STATUS_OK,
   STATUS_CREATED,
   STATUS_BAD_REQUEST,
-  STATUS_INTERNAL_SERVER_ERROR,
-} = require('../utils/statuses');
+} = require('../errors/statuses');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(STATUS_OK).send(cards))
-    .catch(() => res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error finding cards' }));
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((user) => res.status(STATUS_CREATED).send(user))
-    .catch((e) => {
-      if (e.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error creating card' });
+        next(err);
       }
     });
 };
 
-const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+const deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .orFail(() => {
       throw new ResourceNotFound();
     })
-    .then((card) => res.status(STATUS_OK).send({ data: card }))
-    .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
-        res.status(e.status).send(e);
-      } else if (e.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+    .then((card) => {
+      if (card.owner.toString() === req.user._id) {
+        Card.deleteOne(card)
+          .then(() => res.status(STATUS_OK).send({ data: card }))
+          .catch(next);
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error deleting card' });
+        throw new Forbidden();
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+      } else {
+        next(err);
       }
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .orFail(() => {
       throw new ResourceNotFound();
     })
     .then((card) => res.status(STATUS_OK).send({ data: card }))
-    .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
-        res.status(e.status).send(e);
-      } else if (e.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error like card' });
+        next(err);
       }
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .orFail(() => {
       throw new ResourceNotFound();
     })
     .then((card) => res.status(STATUS_OK).send({ data: card }))
-    .catch((e) => {
-      if (e.name === 'ResourceNotFound') {
-        res.status(e.status).send(e);
-      } else if (e.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: e.message });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send({ message: 'Error dislike card' });
+        next(err);
       }
     });
 };
