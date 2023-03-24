@@ -6,7 +6,6 @@ const {
   STATUS_OK,
   STATUS_CREATED,
   STATUS_BAD_REQUEST,
-  STATUS_INTERNAL_SERVER_ERROR,
   STATUS_CONFLICTED,
 } = require('../errors/statuses');
 const { JWT_SECRET } = require('../config');
@@ -43,9 +42,17 @@ const getCurrentUser = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { name, email, password, about, avatar } = req.body;
+  const {
+    name, email, password, about, avatar,
+  } = req.body;
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({ name, email, password: hash, about, avatar }))
+    .then((hash) => User.create({
+      name,
+      email,
+      password: hash,
+      about,
+      avatar,
+    }))
     .then((user) => res.status(STATUS_CREATED).send({
       name: user.name,
       about: user.about,
