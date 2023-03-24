@@ -1,10 +1,10 @@
 const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const usersRoutes = require('./users');
 const cardsRoutes = require('./cards');
 const { STATUS_NOT_FOUND } = require('../errors/statuses');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
-const { celebrate, Joi } = require('celebrate');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
