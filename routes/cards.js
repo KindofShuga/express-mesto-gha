@@ -15,8 +15,16 @@ router.post('/', celebrate({
     link: Joi.string().required().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/),
   }),
 }), createCard);
-router.delete('/:cardId', deleteCard);
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24),
+  }),
+}), deleteCard);
 router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24),
+  }),
+}), dislikeCard);
 
 module.exports = router;
