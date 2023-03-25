@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const usersRoutes = require('./users');
 const cardsRoutes = require('./cards');
-const { STATUS_NOT_FOUND } = require('../errors/statuses');
+const ResourceNotFound = require('../errors/ResourceNotFound');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
 
@@ -23,8 +23,8 @@ router.post('/signup', celebrate({
 }), createUser);
 router.use('/users', auth, usersRoutes);
 router.use('/cards', auth, cardsRoutes);
-router.use('*', (req, res) => {
-  res.status(STATUS_NOT_FOUND).send({ message: 'Resource Not Found' });
+router.use('*', (req, res, next) => {
+  next(new ResourceNotFound());
 });
 
 module.exports = router;

@@ -1,11 +1,9 @@
 const Card = require('../models/card');
 const ResourceNotFound = require('../errors/ResourceNotFound');
 const Forbidden = require('../errors/Forbidden');
-const {
-  STATUS_OK,
-  STATUS_CREATED,
-  STATUS_BAD_REQUEST,
-} = require('../errors/statuses');
+const BadRequest = require('../errors/BadRequest');
+const ValidationError = require('../errors/ValidationError');
+const { STATUS_OK, STATUS_CREATED } = require('../errors/statuses');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -20,7 +18,7 @@ const createCard = (req, res, next) => {
     .then((user) => res.status(STATUS_CREATED).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new ValidationError());
       } else {
         next(err);
       }
@@ -43,7 +41,7 @@ const deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequest());
       } else {
         next(err);
       }
@@ -58,7 +56,7 @@ const likeCard = (req, res, next) => {
     .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequest());
       } else {
         next(err);
       }
@@ -73,7 +71,7 @@ const dislikeCard = (req, res, next) => {
     .then((card) => res.status(STATUS_OK).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequest());
       } else {
         next(err);
       }

@@ -2,12 +2,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ResourceNotFound = require('../errors/ResourceNotFound');
-const {
-  STATUS_OK,
-  STATUS_CREATED,
-  STATUS_BAD_REQUEST,
-  STATUS_CONFLICTED,
-} = require('../errors/statuses');
+const BadRequest = require('../errors/BadRequest');
+const ValidationError = require('../errors/ValidationError');
+const Conflicted = require('../errors/Conflicted');
+const { STATUS_OK, STATUS_CREATED } = require('../errors/statuses');
 const { JWT_SECRET } = require('../config');
 
 const getUsers = (req, res, next) => {
@@ -24,7 +22,7 @@ const getUser = (req, res, next) => {
     .then((user) => res.status(STATUS_OK).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new BadRequest());
       } else {
         next(err);
       }
@@ -62,9 +60,9 @@ const createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new ValidationError());
       } else if (err.code === 11000) {
-        res.status(STATUS_CONFLICTED).send({ message: 'User already exists' });
+        next(new Conflicted());
       } else {
         next(err);
       }
@@ -80,7 +78,7 @@ const updateUser = (req, res, next) => {
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new ValidationError());
       } else {
         next(err);
       }
@@ -96,7 +94,7 @@ const updateAvatar = (req, res, next) => {
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send({ message: err.message });
+        next(new ValidationError());
       } else {
         next(err);
       }
