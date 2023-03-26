@@ -2,7 +2,6 @@ const Card = require('../models/card');
 const ResourceNotFound = require('../errors/ResourceNotFound');
 const Forbidden = require('../errors/Forbidden');
 const BadRequest = require('../errors/BadRequest');
-const ValidationError = require('../errors/ValidationError');
 const { STATUS_OK, STATUS_CREATED } = require('../errors/statuses');
 
 const getCards = (req, res, next) => {
@@ -18,7 +17,7 @@ const createCard = (req, res, next) => {
     .then((user) => res.status(STATUS_CREATED).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError());
+        next(new BadRequest());
       } else {
         next(err);
       }

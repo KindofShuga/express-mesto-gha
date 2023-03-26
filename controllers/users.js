@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ResourceNotFound = require('../errors/ResourceNotFound');
 const BadRequest = require('../errors/BadRequest');
-const ValidationError = require('../errors/ValidationError');
 const Conflicted = require('../errors/Conflicted');
 const { STATUS_OK, STATUS_CREATED } = require('../errors/statuses');
 const { JWT_SECRET } = require('../config');
@@ -60,7 +59,7 @@ const createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError());
+        next(new BadRequest());
       } else if (err.code === 11000) {
         next(new Conflicted());
       } else {
@@ -78,7 +77,7 @@ const updateUser = (req, res, next) => {
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError());
+        next(new BadRequest());
       } else {
         next(err);
       }
@@ -94,7 +93,7 @@ const updateAvatar = (req, res, next) => {
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError());
+        next(new BadRequest());
       } else {
         next(err);
       }
