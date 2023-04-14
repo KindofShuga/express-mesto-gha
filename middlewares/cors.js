@@ -3,7 +3,7 @@ const allowedCors = [
   'https://mesto.alinat.nomoredomains.work',
   'http://mesto.alinat.nomoredomains.work',
   'https://localhost:3000',
-  'http://localhost:3000'
+  'http://localhost:3000',
 ];
 
 const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
